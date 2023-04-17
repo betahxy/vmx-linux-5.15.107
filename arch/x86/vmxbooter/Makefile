@@ -2,7 +2,7 @@ CC := gcc -m64
 LD := ld -m elf_x86_64 --nmagic
 AS := as --64 -g
 
-INCPATH := .
+INCPATH := -I. -I../../../include -I../include/uapi -I../../../include/uapi -I../include/generated/uapi 
 INCS    := 
 CFLAGS  := $(ARCH_CFLAGS) -g3 -O3 -ffreestanding -Wno-unused-function -Wno-unused-variable -Wno-unused-but-set-variable -nostdinc -nostdlib -fno-pic -mno-red-zone -mcmodel=large -mno-sse -mno-sse2 -mgeneral-regs-only $(INCS)
 LDFLAGS := -nostdlib -fno-builtin -nostartfiles -nostdinc -nodefaultlibs
@@ -49,7 +49,7 @@ loader.o: loader.S guest_img.S vmlinux.bin
 
 define COMPILE_OBJ_RULE
 	$(info |     [CC]   Compiling $@)
-	@$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(INCPATH) $(CFLAGS) -c $< -o $@
 endef
 
 define COMPILE_DEP_RULE
@@ -61,17 +61,19 @@ define COMPILE_DEP_RULE
 	rm -f $@.$$$$
 endef
 
+%.o: %.c ; $(COMPILE_OBJ_RULE)
+
 clean:
 	@rm -f $(OBJS) $(DEPS) *.o $(KERNEL) kernel.iso vmlinux.bin
 	@rm -rf iso
 
 gdb:
 	gdb -x ./gdbinit
-run:
+run: all
 	./build_iso.sh kernel.img
 	/usr/bin/qemu-system-x86_64 -cpu max -m 128 -cdrom kernel.iso -no-reboot -s
-debug:
+debug: all
 	./build_iso.sh kernel.img
-	/usr/bin/qemu-system-x86_64 -cpu max -m 128 -cdrom kernel.iso -no-reboot -s -S
+	/usr/bin/qemu-system-x86_64 -cpu max -m 128 -cdrom kernel.iso -no-reboot -s -S -monitor stdio
 
 -include $(DEPS)

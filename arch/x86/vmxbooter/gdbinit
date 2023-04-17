@@ -4,5 +4,5 @@ set print pretty on
 set disassemble-next-line on
 set disassembler-options
 set listsize 20
-file vmlinux
+file ../../../vmlinux
 target remote:1234
