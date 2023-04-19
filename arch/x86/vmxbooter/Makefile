@@ -71,9 +71,9 @@ gdb:
 	gdb -x ./gdbinit
 run: all
 	./build_iso.sh kernel.img
-	/usr/bin/qemu-system-x86_64 -cpu max -m 128 -cdrom kernel.iso -no-reboot -s
+	qemu-system-x86_64 -cpu max -m 128 -cdrom kernel.iso -no-reboot -s -nographic
 debug: all
 	./build_iso.sh kernel.img
-	/usr/bin/qemu-system-x86_64 -cpu max -m 128 -cdrom kernel.iso -no-reboot -s -S -monitor stdio
+	qemu-system-x86_64 -cpu max -m 128 -cdrom kernel.iso -no-reboot -s -S -nographic 
 
 -include $(DEPS)

@@ -1,7 +1,7 @@
 #include <asm/bootparam.h>
 
 struct boot_params boot_params;
-char *cmd_line_str = "auto";
+char *cmd_line_str = "earlyprintk=serial,ttyS0 console=uart8250,io,0x3f8,115200n8";
 struct setup_data init_setup_data;
 
 void kmain(void);
@@ -85,11 +85,24 @@ void kmain(void)
 	boot_params.hdr.ramdisk_size = 0; // Size of the initial ramdisk or ramfs. Leave at zero if there is no initial ramdisk/ramfs.
 	boot_params.hdr.heap_end_ptr = 0xe000 - 0x200;
 	boot_params.hdr.loadflags |= 0x80; /* CAN_USE_HEAP */;
-	boot_params.hdr.cmdline_size = _pa(cmd_line_str);
-	boot_params.hdr.cmdline_size = 255;
+	boot_params.hdr.cmd_line_ptr = _pa(cmd_line_str);
+	boot_params.hdr.cmdline_size = sizeof(*cmd_line_str);
 	// init_setup_data.next = 0;
 	// boot_params.hdr.setup_data = _pa(&init_setup_data);
 	boot_params.hdr.setup_data = 0; //no setup data
+	boot_params.e820_entries = 3;
+	boot_params.e820_table[0].addr = 0; 
+	boot_params.e820_table[0].size = 0x9e000;
+	boot_params.e820_table[0].type = 1;
+
+	boot_params.e820_table[1].addr = 0x9e000; 
+	boot_params.e820_table[1].size = 0x62000;
+	boot_params.e820_table[1].type = 2;
+
+	boot_params.e820_table[2].addr = 0x100000; // begin at 1MB
+	boot_params.e820_table[2].size = 32 * 1024 * 1024; // 32MB
+	boot_params.e820_table[2].type = 1;
+
 	asm volatile("mov %0, %%rsi;movabs $0x1000000, %%rax; jmpq   *%%rax;"::"r"((unsigned long)_pa(&boot_params)));
 	while (1)
 	{
