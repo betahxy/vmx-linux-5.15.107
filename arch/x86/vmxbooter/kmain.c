@@ -1,7 +1,7 @@
 #include <asm/bootparam.h>
 
 struct boot_params boot_params;
-char *cmd_line_str = "earlyprintk=serial,ttyS0 console=uart8250,io,0x3f8,115200n8";
+const char *cmd_line_str = "earlyprintk=serial,ttyS0 console=uart8250,io,0x3f8,115200n8";
 struct setup_data init_setup_data;
 
 void kmain(void);
@@ -53,23 +53,17 @@ void kmain(void)
 	char *vmlinux_base = (char *)_va(0x1000000);
 	char *guest_pos = &input_data;
 	char *guest_pos_end = &input_data_end;
+	unsigned long image_sz = (unsigned long)(guest_pos_end - guest_pos);
+	/* since the image is the last data section, make sure the vmlinux_base address is after this section */
+	if (vmlinux_base < guest_pos) while (1); 
+
+	/* copy image */
+	while (image_sz > 0) {
+		--image_sz;
+		vmlinux_base[image_sz] = guest_pos[image_sz];
+	}
 
 	memset(&boot_params, 0, sizeof(boot_params));
-	if ((unsigned long)guest_pos_end > (unsigned long)vmlinux_base) 
-	{
-		while (1)
-		{
-			/* code */
-		}
-		
-	}
-
-	unsigned long image_sz = (unsigned long)guest_pos_end - (unsigned long)guest_pos;
-	/* copy image */
-	for (unsigned long i = 0; i < image_sz; i++) {
-		vmlinux_base[i] = guest_pos[i];
-	}
-
 	vga_base[0] = '!';
 	boot_params.sentinel = 0xff;
 	boot_params.hdr.version = 0x0215;

@@ -1,21 +1,5 @@
 #include "multiboot2.h"
-
-/* multiboot2 header must be contained completely within the first 32768 bytes of the OS image, and must be 64-bit aligned */
 .section .text
-multiboot_start:
-	/* must have multiboot2 header field */
-	.long MULTIBOOT2_HEADER_MAGIC
-	.long MULTIBOOT_ARCHITECTURE_I386
-	.long multiboot_end - multiboot_start
-	.long -(MULTIBOOT2_HEADER_MAGIC + MULTIBOOT_ARCHITECTURE_I386 + (multiboot_end - multiboot_start))
-
-	/* end tag of multiboot2 */
-	.short MULTIBOOT_HEADER_TAG_END
-	.short 0
-	.long 8
-
-multiboot_end:
-
 /* 
  * grub enters 32-bit mode, so your first section should use 32-bit code.
  * jmp to 64 bit yourself from here.
@@ -27,6 +11,8 @@ loader:
 	mov %eax, multiboot_magic
 	mov %ebx, multiboot_tags
 
+	/* set up a interim stack */
+	mov $0x2000, %esp
 	/* prepare to enter long(64-bit) mode */
 
 	/* close paging first */
@@ -34,6 +20,8 @@ loader:
 	and $(~(1<<31)), %eax
 	mov %eax, %cr0
 
+	/* Assuming huge is supported and thus directly jmp to the lable, needs to fix this after VM supports cpuid */
+	jmp huge_page_enabled
 	/* test if 1G huge page is supported */
 	/* some cpus don't support 1G huge page, we enable this by set qemu -cpu max */
 	mov $0x80000001, %eax
@@ -111,6 +99,21 @@ entry_64:
 	pushq %rax
 	lretq
 	jmp .
+
+/* multiboot2 header must be contained completely within the first 32768 bytes of the OS image, and must be 64-bit aligned */
+.align 64
+multiboot_start:
+	/* must have multiboot2 header field */
+	.long MULTIBOOT2_HEADER_MAGIC
+	.long MULTIBOOT_ARCHITECTURE_I386
+	.long multiboot_end - multiboot_start
+	.long -(MULTIBOOT2_HEADER_MAGIC + MULTIBOOT_ARCHITECTURE_I386 + (multiboot_end - multiboot_start))
+
+	/* end tag of multiboot2 */
+	.short MULTIBOOT_HEADER_TAG_END
+	.short 0
+	.long 8
+multiboot_end:
 
 .align 8
 .global multiboot_magic
