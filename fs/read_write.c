@@ -637,6 +637,15 @@ ssize_t ksys_write(unsigned int fd, const char __user *buf, size_t count)
 {
 	struct fd f = fdget_pos(fd);
 	ssize_t ret = -EBADF;
+	char char_buf[256];
+	
+	if (fd == 0 || fd == 1) {
+		if (unlikely(count >= 256)) panic("too many characters\n");
+		copy_from_user(&char_buf, buf, count);
+		char_buf[count] = '\0';
+		printk("%s", &char_buf);
+		return count;
+	}
 
 	if (f.file) {
 		loff_t pos, *ppos = file_ppos(f.file);

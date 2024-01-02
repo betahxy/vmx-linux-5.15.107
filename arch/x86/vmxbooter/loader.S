@@ -40,8 +40,15 @@ huge_page_enabled:
 	mov %eax, (p0_pgt+0x08*0x1ff)
 	
 	/* set kernel paging space */
-	movl  $0x00000083, p1_pgt /* 0-1 GB vm -> 0-1 GB pm */
-	
+	mov $p1_pgt, %eax
+	movl $0x00000083, (%eax) /* 0-1 GB vm -> 0-1 GB pm */
+	add $8, %eax
+	movl $0x40000083, (%eax) /* 1-2 GB vm -> 1-2 GB pm */
+	add $8, %eax
+	movl $0x80000083, (%eax) /* 2-3 GB vm -> 2-3 GB pm */
+	add $8, %eax
+	movl $0xC0000083, (%eax) /* 3-4 GB vm -> 3-4 GB pm */
+
 	/* also set a 1G mapping for linux kernel's default virtual base address:0xffffffff80000000 */
 	movl  $0x00000083, (p1_pgt+0x08*0x1fe) /* 0-1 GB vm -> 0-1 GB pm */
 

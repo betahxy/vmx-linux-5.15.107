@@ -48,24 +48,21 @@ SECTIONS
 		*(.data.*)
 		*(.bss.efistub)
 		_edata = . ;
-	}
-	. = ALIGN(L1_CACHE_BYTES);
-	.bss : {
+
+		. = ALIGN(L1_CACHE_BYTES);
 		_bss = . ;
 		*(.bss)
 		*(.bss.*)
 		*(COMMON)
 		. = ALIGN(8);	/* For convenience during zeroing */
 		_ebss = .;
-	}
-#ifdef CONFIG_X86_64
-       . = ALIGN(PAGE_SIZE);
-       .pgtable : {
+	
+		. = ALIGN(PAGE_SIZE);
 		_pgtable = . ;
 		*(.pgtable)
 		_epgtable = . ;
 	}
-#endif
+
 	. = ALIGN(PAGE_SIZE);	/* keep ZO size page aligned */
 	_end = .;
 

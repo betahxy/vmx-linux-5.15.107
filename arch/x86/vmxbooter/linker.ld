@@ -25,20 +25,16 @@ SECTIONS {
     .data : AT(phys + (data - code)) {
         data = .;
         *(.data)
-	. = ALIGN(4096);
-	_guest_start = .;
+        . = ALIGN(4096);
+        _guest_start = .;
         *(.guest_image)
         _guest_end = .;
-        . = ALIGN(4096);
-    }
 
-    .bss : AT(phys + (bss - code)) {
-        bss = .;
+        . = ALIGN(4096);
+	bss = .;
         *(.bss)
-        . = ALIGN(4096);
-    }
 
-    .largebss : AT(phys + (largebss - code)) {
+        . = ALIGN(4096);
         largebss = .;
         *(.largebss)
         . = ALIGN(4096);

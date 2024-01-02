@@ -47,6 +47,8 @@ static struct syscore_ops i8237_syscore_ops = {
 
 static int __init i8237A_init_ops(void)
 {
+	/* VMM doesn't support this in the VM, doesn't matter */
+	return 0;
 	/*
 	 * From SKL PCH onwards, the legacy DMA device is removed in which the
 	 * I/O ports (81h-83h, 87h, 89h-8Bh, 8Fh) related to it are removed
